@@ -3,6 +3,7 @@ const app = express()
 require("dotenv").config()
 const morgan = require('morgan')
 const mongoose = require('mongoose')
+const {expressjwt} = require("express-jwt")
 
 process.env.SECRET
 
@@ -16,10 +17,14 @@ mongoose.connect(
 
 
 app.use("/auth", require("./routes/authRouter"))
-app.use('/todo', require('./routes/authRouter'))
+app.use("/api", expressjwt({ secret: process.env.SECRET, algorithms: ["HS256"] }))
+app.use('/api/todo', require('./routes/todoRouter'))
 
 app.use((err, req, res, next) => {
   console.log(err)
+  if(err.name === "Unauthorized Error") {
+    res.status(err.status)
+  }
   return res.send({errMsg: err.message})
 })
 
